@@ -10,7 +10,6 @@ class ShellEmulator:
     """Графический эмулятор командной оболочки ОС."""
 
     def __init__(self, root):
-        """Создать окно, поле вывода и поле ввода."""
         self.root = root
         self.root.title(f"Эмулятор - [{VFS_NAME}]")
 
@@ -22,19 +21,16 @@ class ShellEmulator:
         self.entry.bind("<Return>", self.on_enter)
 
     def write(self, text):
-        """Вывести текст в область вывода."""
         self.output.insert(tk.END, text + "\n")
         self.output.see(tk.END)
 
     def on_enter(self, event):
-        """Обработать нажатие Enter: показать и выполнить."""
         line = self.entry.get()
         self.entry.delete(0, tk.END)
         self.write(f"{VFS_NAME}$ {line}")
         self.execute(line)
 
     def execute(self, line):
-        """Разобрать строку и вызвать команду."""
         try:
             parts = shlex.split(line)
         except ValueError as err:
@@ -45,7 +41,6 @@ class ShellEmulator:
         self.run_command(parts[0], parts[1:])
 
     def run_command(self, command, args):
-        """Выполнить команду-заглушку или сообщить об ошибке."""
         if command == "exit":
             self.root.destroy()
         elif command == "ls":
@@ -57,7 +52,6 @@ class ShellEmulator:
 
 
 def main():
-    """Точка входа в приложение."""
     root = tk.Tk()
     ShellEmulator(root)
     root.mainloop()
