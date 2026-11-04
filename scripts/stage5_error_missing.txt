@@ -1,0 +1,4 @@
+
+ls
+rm missing.txt
+uptime

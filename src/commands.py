@@ -228,9 +228,197 @@ class ShellCommands:
             "Время работы эмулятора: "
             f"{hours:02d}:{minutes:02d}:{seconds:02d}"
         )
+        
 
+
+    """Команды для 5-ого этапа"""
+
+    def mkdir(self, arguments):
+        """Создать каталог в виртуальной файловой системе."""
+
+        recursive = False
+        paths = []
+
+        for arg in arguments:
+            if arg == "-p":
+                recursive = True
+            elif arg.startswith("-"):
+                raise CommandError(
+                    f"mkdir: неизвестный параметр {arg}"
+                )
+            else:
+                paths.append(arg)
+
+        if len(paths) != 1:
+            raise CommandError(
+                "mkdir: требуется указать один путь"
+            )
+
+        path = paths[0]
+
+        if path == "":
+            raise CommandError(
+                "mkdir: пустой путь"
+            )
+
+        parts = self.normalize_path(path)
+
+        if not parts:
+            if recursive:
+                return "Каталог уже существует: /"
+
+            raise CommandError(
+                "mkdir: корневой каталог уже существует"
+            )
+
+        node = self.vfs.root
+        created = False
+
+        for index, part in enumerate(parts):
+            if node["type"] != "dir":
+                raise CommandError(
+                    "mkdir: родительский элемент не является каталогом"
+                )
+
+            children = node["children"]
+            is_last = index == len(parts) - 1
+
+            if part in children:
+                child = children[part]
+
+                if child["type"] != "dir":
+                    raise CommandError(
+                        f"mkdir: существует файл с именем {part}"
+                    )
+
+                if is_last and not recursive:
+                    raise CommandError(
+                        f"mkdir: каталог уже существует: {path}"
+                    )
+
+                node = child
+                continue
+
+            if not is_last and not recursive:
+                raise CommandError(
+                    "mkdir: родительский каталог не существует"
+                )
+
+            new_directory = {
+                "type": "dir",
+                "children": {}
+            }
+
+            children[part] = new_directory
+            node = new_directory
+            created = True
+
+        full_path = "/" + "/".join(parts)
+
+        if created:
+            return f"Каталог создан: {full_path}"
+
+        return f"Каталог уже существует: {full_path}"
+
+
+    def rm(self, arguments):
+        """Удалить файл или каталог из VFS."""
+
+        recursive = False
+        force = False
+        paths = []
+
+        for arg in arguments:
+            if arg in ("-r", "-R"):
+                recursive = True
+            elif arg == "-f":
+                force = True
+            elif arg == "-rf" or arg == "-fr":
+                recursive = True
+                force = True
+            elif arg.startswith("-"):
+                raise CommandError(
+                    f"rm: неизвестный параметр {arg}"
+                )
+            else:
+                paths.append(arg)
+
+        if len(paths) != 1:
+            raise CommandError(
+                "rm: требуется указать один путь"
+            )
+
+        path = paths[0]
+
+        if path == "":
+            raise CommandError(
+                "rm: пустой путь"
+            )
+
+        parts = self.normalize_path(path)
+
+        if not parts:
+            raise CommandError(
+                "rm: нельзя удалить корневой каталог"
+            )
+
+        full_path = "/" + "/".join(parts)
+
+        # Нельзя удалять текущий каталог или его предков.
+        if (
+            len(parts) <= len(self.cwd)
+            and self.cwd[:len(parts)] == parts
+        ):
+            raise CommandError(
+                "rm: нельзя удалить текущий каталог или его родителя"
+            )
+
+        parent_parts = parts[:-1]
+        name = parts[-1]
+
+        try:
+            parent = self.get_node(parent_parts)
+        except CommandError:
+            if force:
+                return ""
+            raise CommandError(
+                f"rm: путь не найден: {path}"
+            )
+
+        if parent["type"] != "dir":
+            raise CommandError(
+                "rm: родительский элемент не является каталогом"
+            )
+
+        children = parent["children"]
+
+        if name not in children:
+            if force:
+                return ""
+
+            raise CommandError(
+                f"rm: путь не найден: {path}"
+            )
+
+        node = children[name]
+
+        if node["type"] == "dir" and not recursive:
+            raise CommandError(
+                "rm: для удаления каталога требуется -r"
+            )
+
+        del children[name]
+
+        if node["type"] == "dir":
+            return f"Удалён каталог: {full_path}"
+
+        return f"Удалён файл: {full_path}"
+
+
+
+ 
     def execute(self, command, arguments):
-        """Выполнить одну из основных команд."""
+        """Выполнить команду эмулятора."""
 
         if command == "ls":
             return self.ls(arguments)
@@ -243,6 +431,12 @@ class ShellCommands:
 
         if command == "uptime":
             return self.uptime(arguments)
+
+        if command == "mkdir":
+            return self.mkdir(arguments)
+
+        if command == "rm":
+            return self.rm(arguments)
 
         raise CommandError(
             f"Неизвестная команда: {command}"

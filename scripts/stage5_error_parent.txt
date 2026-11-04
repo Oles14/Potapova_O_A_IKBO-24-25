@@ -1,0 +1,4 @@
+
+ls
+mkdir missing/child
+uptime

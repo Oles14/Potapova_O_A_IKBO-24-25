@@ -1,0 +1,13 @@
+
+ls
+mkdir demo
+ls
+mkdir -p demo
+mkdir -p demo/a/b
+ls demo/a
+rm -f missing.txt
+rm notes.txt
+ls
+rm -rf demo
+ls
+uptime
