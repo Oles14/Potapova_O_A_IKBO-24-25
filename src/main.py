@@ -7,6 +7,7 @@ import tkinter as tk
 from pathlib import Path
 
 from vfs import VirtualFileSystem, VFSError
+from commands import ShellCommands, CommandError
 
 
 class ShellEmulator:
@@ -54,6 +55,8 @@ class ShellEmulator:
             self.entry.config(state="disabled")
             self.root.title("Эмулятор - [ошибка VFS]")
             return
+
+        self.shell = ShellCommands(self.vfs)
 
         self.root.title(
             f"Эмулятор - [{self.vfs.name}]"
@@ -140,22 +143,22 @@ class ShellEmulator:
             self.root.after(300, self.root.destroy)
             return True
 
-        if command == "ls":
-            self.write(
-                f"Заглушка ls. Аргументы: {arguments}"
+        
+        try:
+            result = self.shell.execute(
+                command,
+                arguments
             )
+
+            if result:
+                self.write(result)
+
             return True
 
-        if command == "cd":
-            self.write(
-                f"Заглушка cd. Аргументы: {arguments}"
-            )
-            return True
+        except CommandError as error:
+            self.write(f"Ошибка: {error}")
+            return False
 
-        self.write(
-            f"Ошибка: неизвестная команда '{command}'"
-        )
-        return False
 
     def run_script(self, script_path):
         """Выполнить стартовый сценарий."""

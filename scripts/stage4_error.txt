@@ -1,0 +1,6 @@
+
+ls
+cd /home
+cd /not_existing_folder
+ls
+uptime
