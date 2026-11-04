@@ -1,0 +1,6 @@
+
+ls
+cd folder
+ls "file with spaces.txt"
+cd ..
+ls

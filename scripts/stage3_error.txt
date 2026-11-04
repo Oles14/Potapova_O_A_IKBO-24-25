@@ -1,0 +1,5 @@
+
+ls
+cd folder
+unknown_command
+ls

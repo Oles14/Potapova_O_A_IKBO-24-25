@@ -1,0 +1,35 @@
+
+{
+  "name": "deep-vfs",
+  "type": "dir",
+  "children": {
+    "home": {
+      "type": "dir",
+      "children": {
+        "student": {
+          "type": "dir",
+          "children": {
+            "documents": {
+              "type": "dir",
+              "children": {
+                "report.txt": {
+                  "type": "file",
+                  "content": "Configuration management report."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "etc": {
+      "type": "dir",
+      "children": {
+        "config.txt": {
+          "type": "file",
+          "content": "mode=test"
+        }
+      }
+    }
+  }
+}
