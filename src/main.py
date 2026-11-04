@@ -1,59 +1,233 @@
-"""Эмулятор командной оболочки. Этап 1: REPL с GUI."""
+
+"""Эмулятор командной оболочки. Вариант 19. Этап 3."""
+
+import argparse
 import shlex
 import tkinter as tk
+from pathlib import Path
 
-
-VFS_NAME = "my-vfs"
+from vfs import VirtualFileSystem, VFSError
+from commands import ShellCommands, CommandError
 
 
 class ShellEmulator:
-    """Графический эмулятор командной оболочки ОС."""
+    """Графический эмулятор командной оболочки."""
 
-    def __init__(self, root):
+    def __init__(self, root, vfs_path=None, script_path=None):
         self.root = root
-        self.root.title(f"Эмулятор - [{VFS_NAME}]")
+        self.vfs = None
+        self.running = True
 
-        self.output = tk.Text(root, height=20, width=80)
-        self.output.pack()
+        self.output = tk.Text(
+            root,
+            height=20,
+            width=80,
+            state="disabled"
+        )
+        self.output.pack(
+            fill="both",
+            expand=True,
+            padx=10,
+            pady=10
+        )
 
         self.entry = tk.Entry(root, width=80)
-        self.entry.pack()
+        self.entry.pack(
+            fill="x",
+            padx=10,
+            pady=(0, 10)
+        )
+
         self.entry.bind("<Return>", self.on_enter)
 
-    def write(self, text):
-        self.output.insert(tk.END, text + "\n")
-        self.output.see(tk.END)
+        self.write("Эмулятор командной оболочки")
+        self.write("Этап 3: виртуальная файловая система")
+        self.write("")
 
-    def on_enter(self, event):
-        line = self.entry.get()
-        self.entry.delete(0, tk.END)
-        self.write(f"{VFS_NAME}$ {line}")
-        self.execute(line)
+        self.print_debug(vfs_path, script_path)
 
-    def execute(self, line):
         try:
-            parts = shlex.split(line)
-        except ValueError as err:
-            self.write(f"ошибка парсинга: {err}")
-            return
-        if not parts:
-            return
-        self.run_command(parts[0], parts[1:])
+            self.vfs = VirtualFileSystem(vfs_path)
 
-    def run_command(self, command, args):
+        except VFSError as error:
+            self.write(f"Ошибка загрузки VFS: {error}")
+            self.write("Работа эмулятора остановлена.")
+            self.entry.config(state="disabled")
+            self.root.title("Эмулятор - [ошибка VFS]")
+            return
+
+        self.shell = ShellCommands(self.vfs)
+
+        self.root.title(
+            f"Эмулятор - [{self.vfs.name}]"
+        )
+
+        self.write(
+            f"VFS успешно загружена: {self.vfs.name}"
+        )
+
+        stats = self.vfs.statistics()
+
+        self.write(
+            f"Файлов: {stats['files']}"
+        )
+        self.write(
+            f"Каталогов: {stats['directories']}"
+        )
+        self.write(
+            f"Максимальная глубина: {stats['max_depth']}"
+        )
+        self.write("")
+
+        self.entry.focus_set()
+
+        if script_path is not None:
+            self.root.after(
+                100,
+                lambda: self.run_script(script_path)
+            )
+
+    def write(self, text):
+        """Вывести строку в графическое окно."""
+
+        self.output.config(state="normal")
+        self.output.insert("end", str(text) + "\n")
+        self.output.see("end")
+        self.output.config(state="disabled")
+
+    def print_debug(self, vfs_path, script_path):
+        """Показать параметры запуска."""
+
+        self.write("=== Параметры запуска ===")
+        self.write(f"VFS path: {vfs_path}")
+        self.write(f"Script path: {script_path}")
+        self.write("========================")
+        self.write("")
+
+    def on_enter(self, event=None):
+        """Обработать нажатие Enter."""
+
+        if not self.running:
+            return
+
+        command_line = self.entry.get()
+        self.entry.delete(0, tk.END)
+
+        self.write(f"$ {command_line}")
+
+        self.execute_command(command_line)
+
+    def execute_command(self, command_line):
+        """Разобрать и выполнить команду."""
+
+        try:
+            args = shlex.split(command_line)
+        except ValueError as error:
+            self.write(f"Ошибка разбора команды: {error}")
+            return False
+
+        if not args:
+            return True
+
+        command = args[0]
+        arguments = args[1:]
+
         if command == "exit":
-            self.root.destroy()
-        elif command == "ls":
-            self.write(f"ls {args}")
-        elif command == "cd":
-            self.write(f"cd {args}")
-        else:
-            self.write(f"ошибка: неизвестная команда '{command}'")
+            if arguments:
+                self.write("Ошибка: exit не принимает аргументы")
+                return False
+
+            self.write("Завершение работы.")
+            self.running = False
+            self.entry.config(state="disabled")
+            self.root.after(300, self.root.destroy)
+            return True
+
+        
+        try:
+            result = self.shell.execute(
+                command,
+                arguments
+            )
+
+            if result:
+                self.write(result)
+
+            return True
+
+        except CommandError as error:
+            self.write(f"Ошибка: {error}")
+            return False
+
+
+    def run_script(self, script_path):
+        """Выполнить стартовый сценарий."""
+
+        try:
+            lines = Path(script_path).read_text(
+                encoding="utf-8-sig"
+            ).splitlines()
+
+        except (OSError, UnicodeError) as error:
+            self.write(
+                f"Ошибка загрузки сценария: {error}"
+            )
+            return
+
+        self.write("=== Выполнение стартового сценария ===")
+
+        for number, line in enumerate(lines, start=1):
+            command = line.strip()
+
+            if not command:
+                continue
+
+            self.write(f"$ {command}")
+
+            success = self.execute_command(command)
+
+            if not success:
+                self.write(
+                    f"Ошибка в строке {number}. "
+                    "Выполнение сценария остановлено."
+                )
+                return
+
+            if not self.running:
+                return
+
+        self.write("=== Сценарий завершён ===")
 
 
 def main():
+    """Точка входа в программу."""
+
+    parser = argparse.ArgumentParser(
+        description="Эмулятор командной оболочки"
+    )
+
+    parser.add_argument(
+        "--vfs",
+        default=None,
+        help="Путь к JSON-файлу VFS"
+    )
+
+    parser.add_argument(
+        "--script",
+        default=None,
+        help="Путь к стартовому сценарию"
+    )
+
+    args = parser.parse_args()
+
     root = tk.Tk()
-    ShellEmulator(root)
+
+    ShellEmulator(
+        root,
+        vfs_path=args.vfs,
+        script_path=args.script
+    )
+
     root.mainloop()
 
 

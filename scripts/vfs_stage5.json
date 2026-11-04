@@ -1,0 +1,32 @@
+
+{
+  "name": "stage5-vfs",
+  "type": "dir",
+  "children": {
+    "documents": {
+      "type": "dir",
+      "children": {
+        "report.txt": {
+          "type": "file",
+          "content": "Important report"
+        },
+        "draft.txt": {
+          "type": "file",
+          "content": "Temporary draft"
+        }
+      }
+    },
+    "notes.txt": {
+      "type": "file",
+      "content": "My notes"
+    },
+    "old.txt": {
+      "type": "file",
+      "content": "Old information"
+    },
+    "empty": {
+      "type": "dir",
+      "children": {}
+    }
+  }
+}

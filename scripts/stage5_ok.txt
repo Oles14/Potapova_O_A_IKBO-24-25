@@ -1,0 +1,19 @@
+
+ls
+mkdir projects
+ls
+mkdir -p projects/python/tests
+ls projects
+ls projects/python
+cd projects/python
+ls
+cd /
+rm old.txt
+ls
+rm -r projects
+ls
+mkdir empty2
+ls
+rm -r empty2
+ls
+uptime

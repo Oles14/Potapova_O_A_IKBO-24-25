@@ -1,0 +1,55 @@
+
+{
+  "name": "stage4-vfs",
+  "type": "dir",
+  "children": {
+    "home": {
+      "type": "dir",
+      "children": {
+        "student": {
+          "type": "dir",
+          "children": {
+            "documents": {
+              "type": "dir",
+              "children": {
+                "notes.txt": {
+                  "type": "file",
+                  "content": "Line 1\nLine 2\nLine 3\nLine 4\nLine 5\nLine 6\nLine 7\nLine 8\nLine 9\nLine 10\nLine 11\nLine 12"
+                },
+                "report.txt": {
+                  "type": "file",
+                  "content": "Configuration management report."
+                },
+                "my file.txt": {
+                  "type": "file",
+                  "content": "A file with spaces in its name."
+                }
+              }
+            },
+            "photo.txt": {
+              "type": "file",
+              "content": "Photography is my hobby."
+            }
+          }
+        }
+      }
+    },
+    "etc": {
+      "type": "dir",
+      "children": {
+        "config.txt": {
+          "type": "file",
+          "content": "mode=test"
+        }
+      }
+    },
+    ".hidden.txt": {
+      "type": "file",
+      "content": "Hidden file."
+    },
+    "readme.txt": {
+      "type": "file",
+      "content": "Welcome to stage 4!"
+    }
+  }
+}

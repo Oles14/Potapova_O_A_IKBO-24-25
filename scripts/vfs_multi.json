@@ -1,0 +1,28 @@
+
+{
+  "name": "multi-vfs",
+  "type": "dir",
+  "children": {
+    "readme.txt": {
+      "type": "file",
+      "content": "Welcome to the emulator!"
+    },
+    "notes.txt": {
+      "type": "file",
+      "content": "These are my notes."
+    },
+    "data.txt": {
+      "type": "file",
+      "content": "123456789"
+    },
+    "folder": {
+      "type": "dir",
+      "children": {
+        "inside.txt": {
+          "type": "file",
+          "content": "File inside a folder."
+        }
+      }
+    }
+  }
+}

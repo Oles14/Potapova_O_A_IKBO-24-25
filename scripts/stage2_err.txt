@@ -1,0 +1,4 @@
+ls
+cd folder
+abracadabra
+ls этого-не-будет

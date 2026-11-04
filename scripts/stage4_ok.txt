@@ -1,0 +1,18 @@
+
+ls
+ls -a
+ls /home
+cd /home/student
+ls
+cd documents
+ls
+ls "my file.txt"
+tail notes.txt
+tail -n 3 notes.txt
+tail "my file.txt"
+tail -n 0 notes.txt
+cd ..
+ls
+cd /
+ls
+uptime

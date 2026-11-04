@@ -1,0 +1,5 @@
+
+ls
+mkdir documents
+rm old.txt
+uptime

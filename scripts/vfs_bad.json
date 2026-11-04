@@ -1,0 +1,8 @@
+
+{
+  "name": "broken-vfs",
+  "type": "dir",
+  "children": [
+    "this should be an object"
+  ]
+}

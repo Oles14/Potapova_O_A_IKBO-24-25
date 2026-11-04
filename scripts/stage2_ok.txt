@@ -1,0 +1,4 @@
+ls
+cd folder
+ls "file with space"
+cd "my dir"

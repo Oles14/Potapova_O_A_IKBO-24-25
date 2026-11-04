@@ -1,0 +1,11 @@
+
+{
+  "name": "minimal-vfs",
+  "type": "dir",
+  "children": {
+    "hello.txt": {
+      "type": "file",
+      "content": "Hello from virtual filesystem!"
+    }
+  }
+}
